@@ -1,0 +1,6 @@
+export const taskAddInput = document.querySelector("#taskInput")
+export const taskAddBtn = document.querySelector("#addTaskBtn")
+export const tasksContainer = document.querySelector("#tasksContainer")
+export const allTasksBtn = document.querySelector("#allTasksBtn")
+export const completedTasksBtn = document.querySelector("#completedTasksBtn")
+export const InProgressTasksBtn = document.querySelector("#InProgressTasksBtn")
