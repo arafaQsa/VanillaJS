@@ -2,7 +2,7 @@ import {addTaskService, modifyTaskService, removeTaskService, setTaskStatusServi
 import { renderTask } from "../ui/render.js";
 import { prepareTaskElementToModify, modifyTaskElement, removeTaskElement } from "../ui/elements.js";
 import { createElementObject } from "../utils/helpers.js"
-import { taskAddInput, taskAddBtn, allTasksBtn, completedTasksBtn, InProgressTasksBtn } from "../dom.js"
+import { taskAddInput, taskAddBtn, allTasksBtn, completedTasksBtn, InProgressTasksBtn, operationsState, tasksContainer } from "../dom.js"
 import { filterTasks } from "../ui/filters.js"
 
 export function registerListeners() {
@@ -24,27 +24,38 @@ export function registerListeners() {
             prepareTaskElementToModify(createElementObject(e.target.parentElement))
         }
         else if(e.target.classList.contains("taskSaveBtn")) {
-            await modifyTaskService(createElementObject(e.target.parentElement))
-            
+            const modifiedTask = await modifyTaskService(createElementObject(e.target.parentElement))
+            if (!modifiedTask) {
+                modifyTaskElement(null)
+                return
+            }
             modifyTaskElement(createElementObject(e.target.parentElement))
         }
         else if(e.target.classList.contains("taskDeleteBtn")) {
-            await removeTaskService(createElementObject(e.target.parentElement))
+            const removedTask = await removeTaskService(createElementObject(e.target.parentElement))
+            if (!removedTask) {
+                removeTaskElement(null)
+                return
+            }
             removeTaskElement(e.target.parentElement)
         }
     })
 
     tasksContainer.addEventListener("keydown", async (e) => {
-        if (e.key === "Enter") {
-            if(e.target.classList.contains("taskInput"))
-                await modifyTaskService(createElementObject(e.target.parentElement))
-                modifyTaskElement(createElementObject(e.target.parentElement))
+        if (e.key === "Enter" && e.target.classList.contains("taskInput")) {
+            const modifiedTask = await modifyTaskService(createElementObject(e.target.parentElement))
+            if (!modifiedTask) {
+                modifyTaskElement(null)
+                return
+            }
+            modifyTaskElement(createElementObject(e.target.parentElement))
         }
     })
 
-    tasksContainer.addEventListener("change", (e) => {
+    tasksContainer.addEventListener("change", async (e) => {
         if(e.target.classList.contains("taskCheckbox"))
-            setTaskStatusService(createElementObject(e.target.parentElement))
+            if(!await setTaskStatusService(createElementObject(e.target.parentElement)))
+                e.target.checked = !e.target.checked
     })
 
     allTasksBtn.addEventListener('click', () => filterTasks('all'));

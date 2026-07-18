@@ -1,21 +1,42 @@
 const API_URL = "https://localhost:7131/api/Tasks";
 
+async function parseJsonIfAny(response) {
+    if (response.status === 204) {
+        return null;
+    }
+
+    const text = await response.text();
+    if (!text) {
+        return null;
+    }
+
+    return JSON.parse(text);
+}
+
 export async function getTasks() {
     try {
-        const response = await fetch(API_URL)
-        return await response.json()
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await parseJsonIfAny(response);
+        return data ?? [];
     } catch (error) {
-        console.log("Error occurred while fetching tasks: ", error)
-        return []
+        console.log(error);
+        return [];
     }
 }
 
 export async function getTask(taskId) {
     try {
-        const response = await fetch(`${API_URL}/${taskId}`)
-        return await response.json()
+        const response = await fetch(`${API_URL}/${taskId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await parseJsonIfAny(response);
     } catch (error) {
-        console.log("Error occurred while fetching the task: ", error)
+        console.log(error);
+        return null;
     }
 }
 
@@ -29,11 +50,14 @@ export async function postTask(newTaskObject){
             body: JSON.stringify(newTaskObject)
         });
 
-        const result = await response.json();
-        console.log("تمت الإضافة بنجاح:", result);
-        return result;
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await parseJsonIfAny(response);
     } catch (error) {
-        console.error("خطأ في الإضافة:", error);
+        console.log(error);
+        return null;
     }
 }
 
@@ -47,11 +71,14 @@ export async function putTask(taskId, updatedTask){
             body: JSON.stringify(updatedTask)
         });
 
-        const result = await response.json();
-        console.log("تم التحديث بنجاح:", result);
-        return result
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return true;
     } catch (error) {
-        console.error("خطأ في التحديث:", error);
+        console.log(error);
+        return false;
     }
 }
 
@@ -61,9 +88,13 @@ export async function deleteTask(taskId){
             method: "DELETE"
         });
 
-        const result = await response.json();
-        console.log("تم الحذف بنجاح:", result);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return true;
     } catch (error) {
-        console.error("خطأ في الحذف:", error);
+        console.log(error);
+        return false;
     }
 }
