@@ -48,12 +48,22 @@ export function registerListeners() {
     tasksContainer.addEventListener("change", async (e) => {
         const elementObject = createElementObject(e.target.parentElement)
         if(e.target.classList.contains("taskCheckbox"))
+            elementObject.input.value = elementObject.title.textContent
             if(!await modifyTaskService(elementObject)) {
                 e.target.checked = !e.target.checked
             }
     })
 
-    allTasksBtn.addEventListener('click', () => state.setFilter('all'));
-    completedTasksBtn.addEventListener('click', () => state.setFilter('completed'));
-    InProgressTasksBtn.addEventListener('click', () => state.setFilter('in-progress'));
+    allTasksBtn.addEventListener('click', () => {
+        state.setLoading(true);
+        state.setFilter('all')
+    });
+    completedTasksBtn.addEventListener('click', () => {
+        state.setLoading(true);
+        state.setFilter('completed')
+    });
+    InProgressTasksBtn.addEventListener('click', () => {
+        state.setLoading(true);
+        state.setFilter('in-progress')
+    });
 }

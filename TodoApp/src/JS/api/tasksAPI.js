@@ -1,100 +1,67 @@
 const API_URL = "https://localhost:7131/api/Tasks";
 
-async function parseJsonIfAny(response) {
-    if (response.status === 204) {
-        return null;
-    }
-
+async function parseJsonIfAny(response) { // return null if no content, otherwise parse JSON
+    if (response.status === 204) return null;
     const text = await response.text();
-    if (!text) {
-        return null;
+    if (!text) return null;
+    return JSON.parse(text);
+}
+
+async function handleFetch(url, options = {}) { // 
+    const response = await fetch(url, options);
+
+    if (response.ok) {
+        return await parseJsonIfAny(response);
     }
 
-    return JSON.parse(text);
+    const errorBody = await parseJsonIfAny(response);
+
+    throw {
+        status: response.status,
+        title: errorBody?.title || "API Error",
+        detail: errorBody?.detail || errorBody?.message || "Something went wrong",
+        errors: errorBody?.errors
+    };
 }
 
 export async function getTasks() {
     try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await parseJsonIfAny(response);
-        return data ?? [];
+        return await handleFetch(API_URL) ?? [];
     } catch (error) {
-        console.log(error);
-        return [];
+        throw error; 
     }
 }
 
-export async function getTask(taskId) {
+export async function postTask(newTaskObject) {
     try {
-        const response = await fetch(`${API_URL}/${taskId}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return await parseJsonIfAny(response);
-    } catch (error) {
-        console.log(error);
-        return null;
-    }
-}
-
-export async function postTask(newTaskObject){
-    try {
-        const response = await fetch(API_URL, {
+        return await handleFetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newTaskObject)
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await parseJsonIfAny(response);
     } catch (error) {
-        console.log(error);
-        return null;
+        throw error;
     }
 }
 
-export async function putTask(taskId, updatedTask){
+export async function putTask(taskId, updatedTaskObject) {
     try {
-        const response = await fetch(`${API_URL}/${taskId}`, {
+        return await handleFetch(`${API_URL}/${taskId}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(updatedTask)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedTaskObject)
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return true;
     } catch (error) {
-        console.log(error);
-        return false;
+        throw error;
     }
 }
 
-export async function deleteTask(taskId){
+export async function deleteTask(taskId) {
     try {
-        const response = await fetch(`${API_URL}/${taskId}`, {
+        return await handleFetch(`${API_URL}/${taskId}`, {
             method: "DELETE"
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return true;
     } catch (error) {
-        console.log(error);
-        return false;
+        throw error;
     }
 }

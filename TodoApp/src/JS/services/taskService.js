@@ -2,69 +2,77 @@ import { getTasks, postTask, putTask, deleteTask } from "../api/tasksAPI.js";
 import { state } from "../state/state.js";
 
 export async function getTasksService() {
-    state.setLoading(true)
-    state.setTasks(await getTasks())
+    try {
+        state.setLoading(true);
+        const tasks = await getTasks();
+        state.setTasks(tasks ?? []);
+    } catch (error) {
+        state.setOperationError(error);
+    }
 }
 
 export async function addTaskService(taskTitle) {
-    state.setLoading(true)
+    state.setLoading(true);
 
     const title = taskTitle.trim();
     if (!title) {
-        alert("Enter a task title");
-        return null;
+        state.setOperationError("Enter a task title");
+        return false;
     }
     
-    const newTask = { title, isCompleted: false };
-    const success = await postTask(newTask);
-    
-    if (success) {
-        state.addTask(newTask);
-        return true
+    try {
+        const newTask = { title, isCompleted: false };
+        const savedTask = await postTask(newTask);
+
+        state.addTask(savedTask);
+        return true;
+    } catch (error) {
+        state.setOperationError(error);
+        return false;
     }
-    state.setOperationError("Adding")
-    return false
 }
 
 export async function modifyTaskService(taskElementObject) {
-    state.setLoading(true)
+    state.setLoading(true);
 
     const taskId = Number(taskElementObject.element.dataset.id);
     const currentTask = state.tasks.find(tsk => tsk.id === taskId);
 
-    let title = taskElementObject.input.value.trim();
+    const title = taskElementObject.input.value.trim();
     const isCompleted = taskElementObject.checkbox.checked;
+
     if (!title) {
-        title = "No Title"
+        state.setOperationError("Modifying failed because the task title cannot be empty.");
+        return false;
     }
 
-    const property = {
-        isCompleted,
-        title
-    }
+    const updatedProperties = { isCompleted, title };
+    const safeTask = { ...currentTask, ...updatedProperties };
 
-    const updatedTask = { ...currentTask, ...property };
-    const { id, createdDate, updatedDate, ...safeTask } = updatedTask;
+    delete safeTask.id;
+    delete safeTask.createdAt;
+    delete safeTask.updatedAt;
 
-    const success = await putTask(taskId, safeTask);
-    if (success) {
-        state.updateTask(taskId, { ...property });
+    try {
+        await putTask(taskId, safeTask);
+        state.updateTask(taskId, updatedProperties);
         return true;
+    } catch (error) {
+        state.setOperationError(error);
+        return false;
     }
-    state.setOperationError("updating")
-    return false;
 }
 
 export async function removeTaskService(taskElementObject) {
-    state.setLoading(true)
-
+    state.setLoading(true);
     const taskId = Number(taskElementObject.element.dataset.id);
 
-    const success = await deleteTask(taskId);
-    if (success) {
+    try {
+        await deleteTask(taskId);
         state.deleteTask(taskId);
         return true;
+    } catch (error) {
+        state.setOperationError(error);
+        return false;
     }
-    state.setOperationError("Deleting")
-    return false;
 }

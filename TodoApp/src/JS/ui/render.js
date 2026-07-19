@@ -1,3 +1,4 @@
+// ui/render.js
 import { tasksContainer, operationsState } from "../dom.js";
 import { state } from "../state/state.js";
 import { createTaskElement } from "./elements.js";
@@ -5,13 +6,12 @@ import { createTaskElement } from "./elements.js";
 export async function renderAllTasks() {
     const tasks = state.tasks;
 
-    if(!tasks || tasks.length === 0) {
-        renderResponseStatus("Failed to fetch tasks. Please try again.")
-        return
-    }
-
     tasksContainer.innerHTML = ""; 
-    operationsState.textContent = ""; 
+
+    if (!tasks || tasks.length === 0) {
+        tasksContainer.innerHTML = "<p class='empty-msg'>No tasks found. Add a new one!</p>";
+        return;
+    }
 
     tasks.forEach((task) => {
         renderTask(task);
@@ -19,14 +19,12 @@ export async function renderAllTasks() {
 }
 
 export function renderTask(task) {
-    if (!task) {
-        renderResponseStatus("Failed to render task. Please try again.")
-        return;
-    }
-    const taskElement = createTaskElement(task)
-    tasksContainer.appendChild(taskElement)
+    if (!task) return;
+    
+    const taskElement = createTaskElement(task);
+    tasksContainer.appendChild(taskElement);
 }
 
 export function renderResponseStatus(Message) {
-    operationsState.textContent = Message || "No response from the server. Please check your network connection.";
+    operationsState.textContent = Message;
 }

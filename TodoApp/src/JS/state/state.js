@@ -1,6 +1,5 @@
 import { renderAllTasks, renderResponseStatus } from "../ui/render.js";
 import { filterTasks } from "../ui/filters.js"
-import { getTasks } from "../api/tasksAPI.js";
 
 const rawData = {
     tasks: [],
@@ -16,18 +15,42 @@ const handler = {
             renderResponseStatus("Loading...")
             rawData.loading = false
         }
-        else if (property === "tasks") {
-            console.log(`🔄 الـ Proxy رصد تغييراً في [${property}]. جاري تحديث الـ DOM تلقائياً...`);
-            renderAllTasks();
-        }
-        else if (property === "filter") {
-            console.log(`🔄 الـ Proxy رصد تغييراً في [${property}]. جاري تحديث الـ DOM تلقائياً...`);
-            filterTasks(value);
+        else if (property === "tasks" || property === "filter") {
+            if (property === "tasks") {
+                renderAllTasks();
+                if (value.length === 0) {
+                    renderResponseStatus(null)
+                }
+                else {
+                    renderResponseStatus(`Filter: all | Showing ${value.length} task(s)`);
+                }
+            }
+            else {
+                const filteredCount = filterTasks(value, rawData.filter);
+                renderResponseStatus(`Filter: ${rawData.filter} | Showing ${filteredCount} task(s)`);
+            }
         }
         else if (property === "operationError" && value) {
-            console.log(`🔄 الـ Proxy رصد تغييراً في [${property}]. جاري تحديث الـ DOM تلقائياً...`);
-            renderResponseStatus(`Task ${value} Failed. Please try again.`)
-            rawData.operationError = null
+            console.log(`🔄 الـ Proxy رصد خطأ منظم وقام بمعالجته تلقائياً...`);
+
+            let displayMessage = "An error occurred.";
+
+            if (typeof value === "string") {
+                displayMessage = value;
+            } 
+            else if (typeof value === "object") {
+                if (value.message === "Failed to fetch") {
+                    displayMessage = "Unable to reach the server. Please check if the backend is running or check your internet connection.";
+                }
+                else if (value.errors) {
+                    displayMessage = `Validation Error: ${Object.values(value.errors).flat().join(" | ")}`;
+                } else {
+                    displayMessage = value.detail || value.message || "Server Error";
+                }
+            }
+
+            renderResponseStatus(displayMessage);
+            rawData.operationError = null;
         }
         return true;
     }
@@ -36,18 +59,17 @@ const handler = {
 const reactiveData = new Proxy(rawData, handler);
 
 export const state = {
-    get tasks() {
-        return [...reactiveData.tasks];
-    },
-    get filter() {
-        return reactiveData.filter;
-    },
+    get tasks() { return [...reactiveData.tasks]; },
+    get filter() { return reactiveData.filter; },
 
-    setTasks(tasksList) {
-        reactiveData.tasks = [...tasksList];
-    },
+    setTasks(tasksList) { reactiveData.tasks = [...tasksList]; },
+    setFilter(newFilter) { reactiveData.filter = newFilter; },
+    setLoading(value) { reactiveData.loading = value },
+
+    setOperationError(errorObjectOrString) { reactiveData.operationError = errorObjectOrString },
+
     addTask(newTask) {
-        reactiveData.tasks = [...reactiveData.tasks, newTask];
+        reactiveData.tasks = [...reactiveData.tasks, newTask]; 
     },
     deleteTask(taskId) {
         reactiveData.tasks = reactiveData.tasks.filter(task => task.id !== taskId);
@@ -57,13 +79,4 @@ export const state = {
             task.id === taskId ? { ...task, ...updatedFields } : task
         );
     },
-    setFilter(newFilter) {
-        reactiveData.filter = newFilter;
-    },
-    setOperationError(operationType) {
-        reactiveData.operationError = operationType
-    },
-    setLoading(value) {
-        reactiveData.loading = value
-    }
 };
