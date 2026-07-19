@@ -10,11 +10,3 @@ export function createElementObject(taskElement) {
     }
     return taskElementObject
 }
-
-export function checkResponseStatus(response, errorMessage) {
-    if (!response || (Array.isArray(response) && response.length === 0)) {
-        operationsState.textContent = errorMessage || "No response from the server. Please check your network connection.";
-        return false;
-    }
-    return true;
-}

@@ -1,64 +1,70 @@
-import {getTasks, getTask, postTask, putTask, deleteTask } from "../api/tasksAPI.js"
-import { state } from "../state/state.js"
+import { getTasks, postTask, putTask, deleteTask } from "../api/tasksAPI.js";
+import { state } from "../state/state.js";
+
+export async function getTasksService() {
+    state.setLoading(true)
+    state.setTasks(await getTasks())
+}
 
 export async function addTaskService(taskTitle) {
-    const title = taskTitle.trim()
-        if (!title) {
-            alert("Enter a task title")
-            return null
-        }
+    state.setLoading(true)
 
-    const newTask = {
-        title,
-        isCompleted: false,
+    const title = taskTitle.trim();
+    if (!title) {
+        alert("Enter a task title");
+        return null;
     }
-
-    const task = await postTask(newTask)
-    if (task)
-        state.tasks.push(task)
-    return task
+    
+    const newTask = { title, isCompleted: false };
+    const success = await postTask(newTask);
+    
+    if (success) {
+        state.addTask(newTask);
+        return true
+    }
+    state.setOperationError("Adding")
+    return false
 }
 
 export async function modifyTaskService(taskElementObject) {
-    const txt = taskElementObject.input.value.trim()
-    if(!txt) {
-        alert("Enter a task title!")
-        return null
+    state.setLoading(true)
+
+    const taskId = Number(taskElementObject.element.dataset.id);
+    const currentTask = state.tasks.find(tsk => tsk.id === taskId);
+
+    let title = taskElementObject.input.value.trim();
+    const isCompleted = taskElementObject.checkbox.checked;
+    if (!title) {
+        title = "No Title"
     }
 
-    const taskId = Number(taskElementObject.element.dataset.id)
-    const index = state.tasks.findIndex((tsk) => tsk.id === taskId)
-    state.tasks[index].title = txt
-    const { id, createdDate, updatedDate, ...safeTask } = state.tasks[index]
+    const property = {
+        isCompleted,
+        title
+    }
 
-    const task = await putTask(taskId, safeTask)
-    if (!task)
-        state.tasks[index].title = taskElementObject.title.textContent
-    return task
+    const updatedTask = { ...currentTask, ...property };
+    const { id, createdDate, updatedDate, ...safeTask } = updatedTask;
+
+    const success = await putTask(taskId, safeTask);
+    if (success) {
+        state.updateTask(taskId, { ...property });
+        return true;
+    }
+    state.setOperationError("updating")
+    return false;
 }
 
 export async function removeTaskService(taskElementObject) {
-    const taskId = Number(taskElementObject.element.dataset.id)
-    const index = state.tasks.findIndex((tsk) => tsk.id === taskId)
+    state.setLoading(true)
 
-    const task = await deleteTask(taskId)
-    if (task)
-        state.tasks.splice(index, 1)
-    return task
-}
+    const taskId = Number(taskElementObject.element.dataset.id);
 
-export async function setTaskStatusService(taskElementObject) {
-    const taskId = Number(taskElementObject.element.dataset.id)
-    const index = state.tasks.findIndex((tsk) => tsk.id === taskId)
-    state.tasks[index].isCompleted = taskElementObject.checkbox.checked
-
-    const { id, createdDate, updatedDate, ...safeTask } = state.tasks[index]
-    const task = await putTask(taskId, safeTask)
-    if(!task) {
-        state.tasks[index].isCompleted = !taskElementObject.checkbox.checked
+    const success = await deleteTask(taskId);
+    if (success) {
+        state.deleteTask(taskId);
+        return true;
     }
-    else {
-        alert("Failed to update task status. Please try again.")
-    }
-    return task
+    state.setOperationError("Deleting")
+    return false;
 }

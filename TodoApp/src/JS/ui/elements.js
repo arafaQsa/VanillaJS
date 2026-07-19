@@ -1,5 +1,4 @@
 import { operationsState } from "../dom.js";
-import { checkResponseStatus } from "../utils/helpers.js";
 
 export function createElement(tagName, properties = {}) {
     return Object.assign(document.createElement(tagName), properties);
@@ -32,10 +31,12 @@ export function prepareTaskElementToModify(taskElementObject) {
 }
 
 export function modifyTaskElement(taskElementObject) {
-    if (!checkResponseStatus(taskElementObject, "Task Modification Failed. Please try again.")) {
-        return
-    }
     taskElementObject.title.textContent = taskElementObject.input.value
+    cancelModifyingElement(taskElementObject)
+}
+
+export function cancelModifyingElement(taskElementObject) {
+    taskElementObject.input.value = taskElementObject.title.textContent
     taskElementObject.input.classList.add("hidden")
     taskElementObject.title.classList.remove("hidden")
     taskElementObject.modifyBtn.classList.remove("hidden")
@@ -44,8 +45,5 @@ export function modifyTaskElement(taskElementObject) {
 }
 
 export function removeTaskElement(element) {
-    if (!checkResponseStatus(element, "Task Deletion Failed. Please try again.")) {
-        return
-    }
     tasksContainer.removeChild(element)
 }
