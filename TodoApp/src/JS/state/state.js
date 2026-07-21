@@ -81,4 +81,14 @@ export const state = {
             task.id === taskId ? { ...task, ...updatedFields } : task
         );
     },
+    replaceTask(tempId, newTask) {
+        reactiveData.tasks = reactiveData.tasks.map(task => {
+            task.id === tempId ? newTask : task
+        });
+    },
+    restoreTask(taskToRestore, originalIndex) {
+        const currentTasks = [...reactiveData.tasks];
+        currentTasks.splice(originalIndex, 0, taskToRestore);
+        reactiveData.tasks = currentTasks;
+    }
 };

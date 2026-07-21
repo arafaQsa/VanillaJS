@@ -8,8 +8,8 @@ import { state } from "../state/state.js";
 
 export function registerListeners() {
     taskAddBtn.addEventListener("click", async () => {
-        if(await addTaskService(taskAddInput.value))
-            taskAddInput.value = "";
+        addTaskService(taskAddInput.value)
+        taskAddInput.value = "";
     })
 
     taskAddInput.addEventListener("keydown", async (event) => {
@@ -17,8 +17,8 @@ export function registerListeners() {
             event.preventDefault(); 
         }
         if (event.key === "Enter" && taskAddInput.value.length <= 25) {
-            if(await addTaskService(taskAddInput.value))
-                taskAddInput.value = "";
+            addTaskService(taskAddInput.value)
+            taskAddInput.value = "";
         }
     })
 

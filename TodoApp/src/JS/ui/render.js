@@ -7,11 +7,6 @@ export async function renderAllTasks() {
 
     tasksContainer.innerHTML = "";
 
-    if (!tasks || tasks.length === 0) {
-        tasksContainer.innerHTML = "<p class='empty-msg'>No tasks found. Add a new one!</p>";
-        return;
-    }
-
     tasks.forEach((task) => {
         renderTask(task);
     });
@@ -19,7 +14,7 @@ export async function renderAllTasks() {
 
 export function renderTask(task) {
     if (!task) return;
-    
+
     const taskElement = createTaskElement(task);
     tasksContainer.appendChild(taskElement);
 }
