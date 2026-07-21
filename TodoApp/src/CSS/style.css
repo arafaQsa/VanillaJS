@@ -1,3 +1,9 @@
 .hidden {
     display: none;
 }
+.redColor {
+    color: red;
+}
+.blackColor {
+    color: black;
+}

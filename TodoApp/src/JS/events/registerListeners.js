@@ -56,14 +56,17 @@ export function registerListeners() {
 
     allTasksBtn.addEventListener('click', () => {
         state.setLoading(true);
-        state.setFilter('all')
+        state.setFilter('all');
+        state.setLoading(false);
     });
     completedTasksBtn.addEventListener('click', () => {
         state.setLoading(true);
-        state.setFilter('completed')
+        state.setFilter('completed');
+        state.setLoading(false);
     });
     InProgressTasksBtn.addEventListener('click', () => {
         state.setLoading(true);
-        state.setFilter('in-progress')
+        state.setFilter('in-progress');
+        state.setLoading(false);
     });
 }

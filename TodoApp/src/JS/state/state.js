@@ -1,4 +1,4 @@
-import { renderAllTasks, renderResponseStatus } from "../ui/render.js";
+import { renderAllTasks, renderResponseStatus, toggleUiLoadingState } from "../ui/render.js";
 import { filterTasks } from "../ui/filters.js"
 
 const rawData = {
@@ -11,12 +11,14 @@ const rawData = {
 const handler = {
     set(target, property, value) {
         target[property] = value;
-        if (property === "loading" && value) {
-            renderResponseStatus("Loading...")
-            rawData.loading = false
+
+        if (property === "loading") {
+            console.log(`🔄 الـ Proxy رصد تغيير حالة الـ Loading إلى: [${value}]`);
+            toggleUiLoadingState(value);
         }
         else if (property === "tasks" || property === "filter") {
             if (property === "tasks") {
+                console.log('🔄 الـ Proxy رصد تغيير فى الـ Tasks وقام بتحديث الواجهة');
                 renderAllTasks();
                 if (value.length === 0) {
                     renderResponseStatus(null)
@@ -26,8 +28,8 @@ const handler = {
                 }
             }
             else {
-                const filteredCount = filterTasks(value, rawData.filter);
-                renderResponseStatus(`Filter: ${rawData.filter} | Showing ${filteredCount} task(s)`);
+                const filteredCount = filterTasks(value);
+                renderResponseStatus(`Filter: ${value} | Showing ${filteredCount} task(s)`);
             }
         }
         else if (property === "operationError" && value) {

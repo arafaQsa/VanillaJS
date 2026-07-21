@@ -4,40 +4,44 @@ import { state } from "../state/state.js";
 export async function getTasksService() {
     try {
         state.setLoading(true);
-        const tasks = await getTasks();
-        state.setTasks(tasks ?? []);
+        await getTasks()
+        .then((fetchedTasks) => {
+            state.setTasks(fetchedTasks);
+        });
     } catch (error) {
         state.setOperationError(error);
+    } finally {
+        state.setLoading(false);
     }
 }
 
 export async function addTaskService(taskTitle) {
-    state.setLoading(true);
-
     const title = taskTitle.trim();
     if (!title) {
         state.setOperationError("Enter a task title");
         return false;
     }
-    
-    try {
-        const newTask = { title, isCompleted: false };
-        const savedTask = await postTask(newTask);
 
-        state.addTask(savedTask);
+    try {
+        state.setLoading(true);
+
+        const newTask = { title, isCompleted: false };
+        await postTask(newTask)
+        .then((createdTask) => {
+            state.addTask(createdTask);
+        });
         return true;
     } catch (error) {
         state.setOperationError(error);
         return false;
+    } finally {
+        state.setLoading(false);
     }
 }
 
 export async function modifyTaskService(taskElementObject) {
-    state.setLoading(true);
-
     const taskId = Number(taskElementObject.element.dataset.id);
     const currentTask = state.tasks.find(tsk => tsk.id === taskId);
-
     const title = taskElementObject.input.value.trim();
     const isCompleted = taskElementObject.checkbox.checked;
 
@@ -48,31 +52,39 @@ export async function modifyTaskService(taskElementObject) {
 
     const updatedProperties = { isCompleted, title };
     const safeTask = { ...currentTask, ...updatedProperties };
-
     delete safeTask.id;
     delete safeTask.createdAt;
     delete safeTask.updatedAt;
 
     try {
-        await putTask(taskId, safeTask);
-        state.updateTask(taskId, updatedProperties);
+        state.setLoading(true);
+        await putTask(taskId, safeTask)
+        .then(() => {
+            state.updateTask(taskId, updatedProperties);
+        })
         return true;
     } catch (error) {
         state.setOperationError(error);
         return false;
+    } finally {
+        state.setLoading(false);
     }
 }
 
 export async function removeTaskService(taskElementObject) {
-    state.setLoading(true);
     const taskId = Number(taskElementObject.element.dataset.id);
 
     try {
-        await deleteTask(taskId);
-        state.deleteTask(taskId);
+        state.setLoading(true);
+        await deleteTask(taskId)
+        .then(() => {
+            state.deleteTask(taskId);
+        });
         return true;
     } catch (error) {
         state.setOperationError(error);
         return false;
+    } finally {
+        state.setLoading(false);
     }
 }
