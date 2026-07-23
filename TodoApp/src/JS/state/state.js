@@ -1,4 +1,4 @@
-import { renderAllTasks, renderResponseStatus, toggleUiLoadingState } from "../ui/render.js";
+import { renderAllTasks, renderResponseStatus, toggleUiLoadingState, rendertaskCount } from "../ui/render.js";
 import { filterTasks } from "../ui/filters.js"
 
 const rawData = {
@@ -20,16 +20,18 @@ const handler = {
             if (property === "tasks") {
                 console.log('🔄 الـ Proxy رصد تغيير فى الـ Tasks وقام بتحديث الواجهة');
                 renderAllTasks();
-                if (value.length === 0) {
-                    renderResponseStatus(null)
+                if (rawData.filter !== "all") {
+                    const filteredCount = filterTasks(rawData.filter);
+                    rendertaskCount(filteredCount);
                 }
                 else {
-                    renderResponseStatus(`Filter: all | Showing ${value.length} task(s)`);
+                    rendertaskCount(value.length);
                 }
+                renderResponseStatus(null)
             }
             else {
                 const filteredCount = filterTasks(value);
-                renderResponseStatus(`Filter: ${value} | Showing ${filteredCount} task(s)`);
+                rendertaskCount(filteredCount);
             }
         }
         else if (property === "operationError" && value) {
@@ -42,7 +44,7 @@ const handler = {
             } 
             else if (typeof value === "object") {
                 if (value.message === "Failed to fetch") {
-                    displayMessage = "Unable to reach the server. Please check if the backend is running or check your internet connection.";
+                    displayMessage = "Unable to reach the server.";
                 }
                 else if (value.errors) {
                     displayMessage = `Validation Error: ${Object.values(value.errors).flat().join(" | ")}`;
@@ -82,9 +84,9 @@ export const state = {
         );
     },
     replaceTask(tempId, newTask) {
-        reactiveData.tasks = reactiveData.tasks.map(task => {
+        reactiveData.tasks = reactiveData.tasks.map(task =>
             task.id === tempId ? newTask : task
-        });
+        );
     },
     restoreTask(taskToRestore, originalIndex) {
         const currentTasks = [...reactiveData.tasks];

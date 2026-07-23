@@ -1,7 +1,7 @@
-export const taskAddInput = document.querySelector("#taskInput")
+export const taskAddInput = document.querySelector("#taskAddInput")
 export const taskAddBtn = document.querySelector("#addTaskBtn")
 export const tasksContainer = document.querySelector("#tasksContainer")
-export const allTasksBtn = document.querySelector("#allTasksBtn")
-export const completedTasksBtn = document.querySelector("#completedTasksBtn")
-export const InProgressTasksBtn = document.querySelector("#InProgressTasksBtn")
 export const operationsState = document.querySelector("#operationsState")
+export const tasksSelection = document.querySelector("#tasksSelection")
+export const taskCount = document.querySelector("#taskCount");
+export const taskSearchInput = document.querySelector("#taskSearchInput");

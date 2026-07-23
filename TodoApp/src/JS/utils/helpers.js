@@ -1,5 +1,6 @@
 export function createElementObject(taskElement) {
     const taskElementObject = {
+        id: Number(taskElement.dataset.id),
         element: taskElement,
         checkbox: taskElement.querySelector(".taskCheckbox"),
         title: taskElement.querySelector(".taskTitle"),

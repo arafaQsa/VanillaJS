@@ -9,18 +9,35 @@
 </head>
 <body>
     <h1>📋 Todo App</h1>
-    <input type="text" name="" id="taskInput">
-    <button id="addTaskBtn">Add</button>
-    <div id="tasksContainer">
+    <section id="reminderTasks">
+        <div id="tasksAdding">
+            <input type="text" name="" id="taskAddInput">
+            <button id="addTaskBtn">Add</button>
+        </div>
         <br>
-    </div>
-    <br>
-    <div id="operationsState"></div>
-    <br>
-    <div id="filterTasks">
-        <button id="allTasksBtn">All</button>
-        <button id="completedTasksBtn">Completed</button>
-        <button id="InProgressTasksBtn">In Progress</button>
-    </div>
+        <div id="tasksFilter">
+            Filters:
+            <select name="filter" id="tasksSelection">
+                <option value="all">All</option>
+                <option value="completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+            </select>
+            | Showing <span id="taskCount">0</span> task(s)
+        </div>
+        <br>
+        <div id="tasksSearching">
+            Search: <input type="text" name="" id="taskSearchInput">
+        </div>
+        <br>
+        <div id="tasksContainer">
+            <br>
+        </div>
+        <br>
+        <div id="operationsState"></div>
+        <br>
+    </section>
+    <section id="organizedTasks">
+        
+    </section>
 </body>
 </html>
